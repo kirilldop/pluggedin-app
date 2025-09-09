@@ -152,14 +152,14 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
-          // Check email verification
-          if (!user.emailVerified) {
-            log.info('Login attempt with unverified email', { 
-              email: credentials.email,
-              userId: user.id 
-            });
-            return null;
-          }
+          // Check email verification (disabled for local development)
+          // if (!user.emailVerified) {
+          //   log.info('Login attempt with unverified email', { 
+          //     email: credentials.email,
+          //     userId: user.id 
+          //   });
+          //   return null;
+          // }
 
           const isPasswordValid = await compare(credentials.password, user.password);
 
