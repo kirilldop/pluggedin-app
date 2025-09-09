@@ -3,10 +3,15 @@
 const { Pool } = require('pg');
 
 console.log('🔄 Setting up database...');
+console.log('📋 DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
+console.log('📋 NODE_ENV:', process.env.NODE_ENV);
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: { 
+    rejectUnauthorized: false,
+    checkServerIdentity: () => undefined
+  }
 });
 
 async function setupDatabase() {
