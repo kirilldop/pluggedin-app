@@ -60,7 +60,14 @@ class RagService {
   private readonly ragApiUrl: string;
 
   constructor() {
-    const ragUrl = process.env.RAG_API_URL || 'http://127.0.0.1:8000';
+    const ragUrl = process.env.RAG_API_URL;
+    
+    // If no RAG_API_URL is set, disable RAG functionality
+    if (!ragUrl || ragUrl.trim() === '') {
+      this.ragApiUrl = '';
+      return;
+    }
+    
     // Validate URL to prevent SSRF attacks
     try {
       const validatedUrl = validateExternalUrl(ragUrl, {
@@ -70,8 +77,8 @@ class RagService {
       this.ragApiUrl = validatedUrl.toString().replace(/\/$/, '');
     } catch (error) {
       console.error('Invalid RAG_API_URL:', error);
-      // Use the default if validation fails
-      this.ragApiUrl = 'https://api.plugged.in';
+      // Disable RAG if validation fails
+      this.ragApiUrl = '';
     }
   }
 
