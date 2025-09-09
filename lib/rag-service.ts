@@ -117,7 +117,7 @@ class RagService {
         };
       }
 
-      const url = new URL('/rag/rag-query', this.ragApiUrl);
+      const url = new URL('/api/rag/query', this.ragApiUrl);
       
       // Add timeout to prevent hanging requests (30 seconds)
       const controller = new AbortController();
@@ -189,8 +189,8 @@ class RagService {
         };
       }
 
-      // Use the same endpoint as queryForContext which works in playground
-      const apiUrl = `${this.ragApiUrl}/rag/rag-query`;
+      // Use the correct API endpoint
+      const apiUrl = `${this.ragApiUrl}/api/rag/query`;
 
       // Add timeout to prevent hanging requests (30 seconds)
       const controller = new AbortController();
