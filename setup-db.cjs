@@ -6,6 +6,12 @@ console.log('🔄 Setting up database...');
 console.log('📋 DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
 console.log('📋 NODE_ENV:', process.env.NODE_ENV);
 
+// Check if DATABASE_URL is set
+if (!process.env.DATABASE_URL) {
+  console.log('❌ DATABASE_URL not set, skipping database setup');
+  process.exit(0);
+}
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { 
@@ -17,6 +23,7 @@ const pool = new Pool({
 async function setupDatabase() {
   try {
     console.log('📡 Connecting to database...');
+    console.log('🔍 DATABASE_URL length:', process.env.DATABASE_URL ? process.env.DATABASE_URL.length : 'NOT SET');
     
     // Test connection
     await pool.query('SELECT NOW()');
