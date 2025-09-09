@@ -23,7 +23,9 @@ try {
       
       const pool = new Pool({
         connectionString: process.env.DATABASE_URL,
-        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+        connectionTimeoutMillis: 10000,
+        idleTimeoutMillis: 30000
       });
       
       // This is a simplified migration - just create the users table if it doesn't exist
