@@ -17,6 +17,16 @@ async function setupDatabase() {
     await pool.query('SELECT NOW()');
     console.log('✅ Connected to database successfully!');
     
+    // Create language enum
+    console.log('🏗️  Creating language enum...');
+    await pool.query(`
+      DO $$ BEGIN
+        CREATE TYPE language AS ENUM ('en', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'ja', 'ko', 'zh', 'ar', 'hi', 'th', 'vi', 'tr', 'pl', 'nl', 'sv', 'da', 'no', 'fi', 'cs', 'hu', 'ro', 'bg', 'hr', 'sk', 'sl', 'et', 'lv', 'lt', 'el', 'he', 'fa', 'ur', 'bn', 'ta', 'te', 'ml', 'kn', 'gu', 'pa', 'or', 'as', 'ne', 'si', 'my', 'km', 'lo', 'ka', 'am', 'sw', 'zu', 'af', 'sq', 'eu', 'be', 'bs', 'ca', 'cy', 'eo', 'gl', 'is', 'mk', 'mt', 'sr', 'uk', 'uz', 'az', 'kk', 'ky', 'mn', 'tg', 'tk', 'tt', 'ug', 'yi', 'yo', 'zu');
+      EXCEPTION
+        WHEN duplicate_object THEN null;
+      END $$;
+    `);
+
     // Create users table
     console.log('🏗️  Creating users table...');
     await pool.query(`
@@ -25,14 +35,14 @@ async function setupDatabase() {
         name TEXT,
         email TEXT UNIQUE NOT NULL,
         password TEXT,
-        email_verified BOOLEAN DEFAULT false,
+        email_verified TIMESTAMP,
         image TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         username TEXT,
         bio TEXT,
         is_public BOOLEAN DEFAULT false,
-        language TEXT DEFAULT 'en',
+        language language DEFAULT 'en',
         avatar_url TEXT,
         failed_login_attempts INTEGER DEFAULT 0,
         account_locked_until TIMESTAMP,
