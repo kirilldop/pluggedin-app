@@ -278,3 +278,4 @@ async function setupDatabase() {
 }
 
 setupDatabase();
+# Force update setup-db.cjs
