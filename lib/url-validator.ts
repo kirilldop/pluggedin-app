@@ -13,6 +13,7 @@ const ALLOWED_DOMAINS = [
   'api.registry.plugged.in',
   'staging.plugged.in',
   'api.staging.plugged.in',
+  'pluggedin-app-production-7527.up.railway.app', // Только наш конкретный Railway домен
   'github.com',
   'api.github.com',
   'raw.githubusercontent.com',
