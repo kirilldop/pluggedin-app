@@ -104,7 +104,7 @@ export function validateExternalUrl(
   const hostname = parsedUrl.hostname.toLowerCase();
   
   // Build the allowed domains list based on environment and options
-  let allowedDomains = [...ALLOWED_DOMAINS];
+  let allowedDomains: string[] = [...ALLOWED_DOMAINS];
   
   // Add custom allowed domains if provided
   if (options.allowedDomains) {
