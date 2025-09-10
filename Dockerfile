@@ -57,9 +57,6 @@ RUN chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy database setup script
-COPY --from=builder --chown=nextjs:nodejs /app/setup-db.cjs ./
-
 USER nextjs
 
 EXPOSE 3000
@@ -67,4 +64,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["sh", "-c", "node setup-db.cjs && node server.js"]
+CMD ["node", "server.js"]

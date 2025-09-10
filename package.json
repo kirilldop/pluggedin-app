@@ -8,7 +8,7 @@
     "build": "next build",
     "build:analyze": "ANALYZE=true next build",
     "postbuild": "node scripts/copy-pdf-worker.js",
-    "start": "node test-start.cjs && node setup-db.cjs && PORT=12005 node .next/standalone/server.js",
+    "start": "pnpm db:migrate:auth && pnpm db:migrate && PORT=12005 node .next/standalone/server.js",
     "lint": "next lint",
     "postinstall": "node scripts/copy-pdf-worker.js",
     "clean": "rm -rf .next node_modules/.cache",
