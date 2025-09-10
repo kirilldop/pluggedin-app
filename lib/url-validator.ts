@@ -104,15 +104,13 @@ export function validateExternalUrl(
   const hostname = parsedUrl.hostname.toLowerCase();
   
   // Build the allowed domains list based on environment and options
-  let effectiveAllowedDomains = [...(options.allowedDomains || ALLOWED_DOMAINS)];
+  let allowedDomains = [...(options.allowedDomains || ALLOWED_DOMAINS)];
   
   // Add development domains if in development mode or explicitly allowed
   const { allowLocalhost = process.env.NODE_ENV === 'development' } = options;
   if (allowLocalhost) {
-    effectiveAllowedDomains = [...effectiveAllowedDomains, ...DEV_ALLOWED_DOMAINS];
+    allowedDomains = [...allowedDomains, ...DEV_ALLOWED_DOMAINS];
   }
-  
-  const { allowedDomains = effectiveAllowedDomains } = options;
 
   // Check if localhost is explicitly allowed
   if (allowLocalhost && (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]' || hostname === '::1')) {
