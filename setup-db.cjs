@@ -182,6 +182,178 @@ async function setupDatabase() {
       );
     `);
     
+    // Create codes table
+    console.log('🏗️  Creating codes table...');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS codes (
+        id SERIAL PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        code TEXT NOT NULL,
+        type TEXT NOT NULL,
+        expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    
+    // Create api_keys table
+    console.log('🏗️  Creating api_keys table...');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS api_keys (
+        id SERIAL PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        key_hash TEXT NOT NULL,
+        last_used_at TIMESTAMP WITH TIME ZONE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        expires_at TIMESTAMP WITH TIME ZONE
+      );
+    `);
+    
+    // Create mcp_servers table
+    console.log('🏗️  Creating mcp_servers table...');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS mcp_servers (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT,
+        repository_url TEXT,
+        homepage_url TEXT,
+        documentation_url TEXT,
+        status mcp_server_status DEFAULT 'ACTIVE',
+        type mcp_server_type DEFAULT 'STDIO',
+        source mcp_server_source DEFAULT 'COMMUNITY',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    
+    // Create custom_mcp_servers table
+    console.log('🏗️  Creating custom_mcp_servers table...');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS custom_mcp_servers (
+        id SERIAL PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        description TEXT,
+        command TEXT NOT NULL,
+        args JSONB DEFAULT '[]',
+        env JSONB DEFAULT '{}',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    
+    // Create tools table
+    console.log('🏗️  Creating tools table...');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS tools (
+        id SERIAL PRIMARY KEY,
+        mcp_server_id INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        description TEXT,
+        input_schema JSONB,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    
+    // Create resources table
+    console.log('🏗️  Creating resources table...');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS resources (
+        id SERIAL PRIMARY KEY,
+        mcp_server_id INTEGER NOT NULL,
+        uri TEXT NOT NULL,
+        name TEXT,
+        description TEXT,
+        mime_type TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    
+    // Create prompts table
+    console.log('🏗️  Creating prompts table...');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS prompts (
+        id SERIAL PRIMARY KEY,
+        mcp_server_id INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        description TEXT,
+        arguments JSONB,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    
+    // Create docs table
+    console.log('🏗️  Creating docs table...');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS docs (
+        id SERIAL PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        title TEXT NOT NULL,
+        content TEXT,
+        file_name TEXT,
+        file_size INTEGER,
+        mime_type TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    
+    // Create playground_settings table
+    console.log('🏗️  Creating playground_settings table...');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS playground_settings (
+        id SERIAL PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        settings JSONB DEFAULT '{}',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    
+    // Create audit_logs table
+    console.log('🏗️  Creating audit_logs table...');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS audit_logs (
+        id SERIAL PRIMARY KEY,
+        user_id TEXT,
+        action TEXT NOT NULL,
+        resource_type TEXT,
+        resource_id TEXT,
+        details JSONB,
+        ip_address TEXT,
+        user_agent TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    
+    // Create notifications table
+    console.log('🏗️  Creating notifications table...');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS notifications (
+        id SERIAL PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        type TEXT NOT NULL,
+        title TEXT NOT NULL,
+        message TEXT,
+        metadata JSONB,
+        read_at TIMESTAMP WITH TIME ZONE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    
+    // Create system_logs table
+    console.log('🏗️  Creating system_logs table...');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS system_logs (
+        id SERIAL PRIMARY KEY,
+        level TEXT NOT NULL,
+        message TEXT NOT NULL,
+        metadata JSONB,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    
     // Create foreign key constraints
     console.log('🔗 Creating foreign key constraints...');
     await pool.query(`
@@ -225,6 +397,86 @@ async function setupDatabase() {
           ALTER TABLE projects ADD CONSTRAINT projects_active_profile_uuid_profiles_uuid_fk 
           FOREIGN KEY (active_profile_uuid) REFERENCES profiles(uuid) ON DELETE SET NULL;
         END IF;
+        
+        -- Codes -> Users
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint WHERE conname = 'codes_user_id_users_id_fk'
+        ) THEN
+          ALTER TABLE codes ADD CONSTRAINT codes_user_id_users_id_fk 
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+        END IF;
+        
+        -- API Keys -> Users
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint WHERE conname = 'api_keys_user_id_users_id_fk'
+        ) THEN
+          ALTER TABLE api_keys ADD CONSTRAINT api_keys_user_id_users_id_fk 
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+        END IF;
+        
+        -- Custom MCP Servers -> Users
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint WHERE conname = 'custom_mcp_servers_user_id_users_id_fk'
+        ) THEN
+          ALTER TABLE custom_mcp_servers ADD CONSTRAINT custom_mcp_servers_user_id_users_id_fk 
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+        END IF;
+        
+        -- Tools -> MCP Servers
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint WHERE conname = 'tools_mcp_server_id_mcp_servers_id_fk'
+        ) THEN
+          ALTER TABLE tools ADD CONSTRAINT tools_mcp_server_id_mcp_servers_id_fk 
+          FOREIGN KEY (mcp_server_id) REFERENCES mcp_servers(id) ON DELETE CASCADE;
+        END IF;
+        
+        -- Resources -> MCP Servers
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint WHERE conname = 'resources_mcp_server_id_mcp_servers_id_fk'
+        ) THEN
+          ALTER TABLE resources ADD CONSTRAINT resources_mcp_server_id_mcp_servers_id_fk 
+          FOREIGN KEY (mcp_server_id) REFERENCES mcp_servers(id) ON DELETE CASCADE;
+        END IF;
+        
+        -- Prompts -> MCP Servers
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint WHERE conname = 'prompts_mcp_server_id_mcp_servers_id_fk'
+        ) THEN
+          ALTER TABLE prompts ADD CONSTRAINT prompts_mcp_server_id_mcp_servers_id_fk 
+          FOREIGN KEY (mcp_server_id) REFERENCES mcp_servers(id) ON DELETE CASCADE;
+        END IF;
+        
+        -- Docs -> Users
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint WHERE conname = 'docs_user_id_users_id_fk'
+        ) THEN
+          ALTER TABLE docs ADD CONSTRAINT docs_user_id_users_id_fk 
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+        END IF;
+        
+        -- Playground Settings -> Users
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint WHERE conname = 'playground_settings_user_id_users_id_fk'
+        ) THEN
+          ALTER TABLE playground_settings ADD CONSTRAINT playground_settings_user_id_users_id_fk 
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+        END IF;
+        
+        -- Audit Logs -> Users (optional)
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint WHERE conname = 'audit_logs_user_id_users_id_fk'
+        ) THEN
+          ALTER TABLE audit_logs ADD CONSTRAINT audit_logs_user_id_users_id_fk 
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL;
+        END IF;
+        
+        -- Notifications -> Users
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint WHERE conname = 'notifications_user_id_users_id_fk'
+        ) THEN
+          ALTER TABLE notifications ADD CONSTRAINT notifications_user_id_users_id_fk 
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+        END IF;
       END $$;
     `);
     
@@ -235,12 +487,26 @@ async function setupDatabase() {
       CREATE INDEX IF NOT EXISTS sessions_user_id_idx ON sessions(user_id);
       CREATE INDEX IF NOT EXISTS projects_user_id_idx ON projects(user_id);
       CREATE INDEX IF NOT EXISTS profiles_project_uuid_idx ON profiles(project_uuid);
+      CREATE INDEX IF NOT EXISTS codes_user_id_idx ON codes(user_id);
+      CREATE INDEX IF NOT EXISTS api_keys_user_id_idx ON api_keys(user_id);
+      CREATE INDEX IF NOT EXISTS custom_mcp_servers_user_id_idx ON custom_mcp_servers(user_id);
+      CREATE INDEX IF NOT EXISTS tools_mcp_server_id_idx ON tools(mcp_server_id);
+      CREATE INDEX IF NOT EXISTS resources_mcp_server_id_idx ON resources(mcp_server_id);
+      CREATE INDEX IF NOT EXISTS prompts_mcp_server_id_idx ON prompts(mcp_server_id);
+      CREATE INDEX IF NOT EXISTS docs_user_id_idx ON docs(user_id);
+      CREATE INDEX IF NOT EXISTS playground_settings_user_id_idx ON playground_settings(user_id);
+      CREATE INDEX IF NOT EXISTS audit_logs_user_id_idx ON audit_logs(user_id);
+      CREATE INDEX IF NOT EXISTS notifications_user_id_idx ON notifications(user_id);
     `);
     
     console.log('✅ Database setup completed successfully!');
     
     // Check all tables were created
-    const tables = ['users', 'accounts', 'sessions', 'verification_tokens', 'projects', 'profiles'];
+    const tables = [
+      'users', 'accounts', 'sessions', 'verification_tokens', 'projects', 'profiles',
+      'codes', 'api_keys', 'mcp_servers', 'custom_mcp_servers', 'tools', 'resources',
+      'prompts', 'docs', 'playground_settings', 'audit_logs', 'notifications', 'system_logs'
+    ];
     console.log('📋 Checking all tables were created:');
     
     for (const tableName of tables) {
