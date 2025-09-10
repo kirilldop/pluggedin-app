@@ -16,7 +16,7 @@ const getPoolConfig = () => {
     config.ssl = {
       // Accept self-signed certificates (no issuer certificate required)
       // Connection is still encrypted, just not fully validated
-      rejectUnauthorized: process.env.DATABASE_SSL_REJECT_UNAUTHORIZED !== 'false' ? true : false
+      rejectUnauthorized: process.env.DATABASE_SSL_REJECT_UNAUTHORIZED === 'true' ? true : false
     };
   }
 
