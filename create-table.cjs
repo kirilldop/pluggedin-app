@@ -6,7 +6,9 @@ console.log('🔄 Creating users table...');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  ssl: process.env.NODE_ENV === 'production' ? { 
+    rejectUnauthorized: process.env.DATABASE_SSL_REJECT_UNAUTHORIZED !== 'false' ? true : false 
+  } : false
 });
 
 async function createTable() {
