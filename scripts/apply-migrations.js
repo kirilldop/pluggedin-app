@@ -74,7 +74,10 @@ if (!latestMigrationFileName) {
 
 async function applyLatestMigration() {
   const pool = new Pool({
-    connectionString: databaseUrl
+    connectionString: databaseUrl,
+    ssl: process.env.NODE_ENV === 'production' ? { 
+      rejectUnauthorized: process.env.DATABASE_SSL_REJECT_UNAUTHORIZED === 'true' ? true : false
+    } : false
   });
 
   try {

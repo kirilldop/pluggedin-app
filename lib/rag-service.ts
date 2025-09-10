@@ -71,7 +71,28 @@ class RagService {
     // Validate URL to prevent SSRF attacks
     try {
       const validatedUrl = validateExternalUrl(ragUrl, {
-        allowLocalhost: process.env.NODE_ENV === 'development'
+        allowLocalhost: process.env.NODE_ENV === 'development',
+        allowedDomains: [
+          'plugged.in',
+          'api.plugged.in',
+          'registry.plugged.in',
+          'api.registry.plugged.in',
+          'staging.plugged.in',
+          'api.staging.plugged.in',
+          'pluggedin-app-production-7527.up.railway.app', // Railway domain
+          'github.com',
+          'api.github.com',
+          'raw.githubusercontent.com',
+          'npmjs.org',
+          'registry.npmjs.org',
+          'pypi.org',
+          'rubygems.org',
+          'packagist.org',
+          'crates.io',
+          'smithery.ai',
+          'server.smithery.ai',
+          'api.smithery.ai',
+        ]
       });
       // Remove trailing slash if present
       this.ragApiUrl = validatedUrl.toString().replace(/\/$/, '');
